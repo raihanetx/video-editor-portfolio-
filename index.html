@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alex Morgan | Video Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f0f0f;
+            color: #f5f5f5;
+            overflow-x: hidden;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+            pointer-events: none;
+            opacity: 0.05;
+            z-index: 100;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        .project-card {
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .project-card:hover .project-overlay {
+            opacity: 1;
+        }
+        
+        .project-overlay {
+            opacity: 0;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .marquee {
+            white-space: nowrap;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #f5f5f5;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease;
+        }
+        
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(245, 245, 245, 0.5);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.15s ease, width 0.3s ease, height 0.3s ease;
+        }
+        
+        .hover-target:hover ~ .cursor-outline {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(245, 245, 245, 0.1);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #f5f5f5;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .split-text span {
+            display: inline-block;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        .split-text.visible span {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .video-reel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        
+        .video-reel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);
+            z-index: 1;
+        }
+        
+        .timeline-item {
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 8px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 18px;
+            width: 1px;
+            height: calc(100% + 20px);
+            background-color: rgba(245, 245, 245, 0.3);
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-transition {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .service-card {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1);
+        }
+
+        .service-icon {
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gallery-item img {
+            transition: all 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .equipment-item {
+            transition: all 0.3s ease;
+        }
+
+        .equipment-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .blog-card {
+            transition: all 0.3s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .blog-card:hover .blog-image img {
+            transform: scale(1.05);
+        }
+
+        .blog-image {
+            overflow: hidden;
+        }
+
+        .blog-image img {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="relative">
+    <div class="grain"></div>
+    <div class="cursor-dot hidden md:block"></div>
+    <div class="cursor-outline hidden md:block"></div>
+    
+    <header class="fixed top-0 left-0 w-full z-50 bg-opacity-80 backdrop-blur-md bg-black border-b border-gray-800">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold tracking-tighter hover-target" onclick="showPage('home')">
+                ALEX<span class="text-red-500">.</span>MORGAN
+            </a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#" class="nav-link hover-target" onclick="showPage('home')">Home</a>
+                <a href="#" class="nav-link hover-target" onclick="showPage('portfolio')">Portfolio</a>
+                <a href="#" class="nav-link hover-target" onclick="showPage('about')">About</a>
+                <a href="#" class="nav-link hover-target" onclick="showPage('services')">Services</a>
+                <a href="#" class="nav-link hover-target" onclick="showPage('blog')">Blog</a>
+                <a href="#" class="nav-link hover-target" onclick="showPage('contact')">Contact</a>
+            </nav>
+            <button class="md:hidden focus:outline-none" id="mobile-menu-button">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+        <div class="md:hidden hidden absolute w-full bg-black bg-opacity-95 p-6 space-y-4" id="mobile-menu">
+            <a href="#" class="block hover-target" onclick="showPage('home'); toggleMobileMenu();">Home</a>
+            <a href="#" class="block hover-target" onclick="showPage('portfolio'); toggleMobileMenu();">Portfolio</a>
+            <a href="#" class="block hover-target" onclick="showPage('about'); toggleMobileMenu();">About</a>
+            <a href="#" class="block hover-target" onclick="showPage('services'); toggleMobileMenu();">Services</a>
+            <a href="#" class="block hover-target" onclick="showPage('blog'); toggleMobileMenu();">Blog</a>
+            <a href="#" class="block hover-target" onclick="showPage('contact'); toggleMobileMenu();">Contact</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- HOME PAGE -->
+        <div id="home" class="page active page-transition">
+            <!-- Hero Section -->
+            <section class="min-h-screen flex items-center justify-center px-6 pt-20">
+                <div class="container mx-auto">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="md:w-1/2 mb-10 md:mb-0">
+                            <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight split-text visible">
+                                <span style="transition-delay: 0.1s;">Crafting</span>
+                                <span style="transition-delay: 0.2s;">Visual</span>
+                                <span style="transition-delay: 0.3s;">Stories</span>
+                                <span style="transition-delay: 0.4s;">With</span>
+                                <span style="transition-delay: 0.5s;">Precision</span>
+                            </h1>
+                            <p class="text-gray-400 text-lg mb-8 max-w-lg">
+                                Video editor with over 8 years of experience specializing in commercial, documentary, and narrative storytelling.
+                            </p>
+                            <div class="flex space-x-4">
+                                <a href="#" class="px-8 py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-sm hover-target" onclick="showPage('portfolio')">
+                                    View Work
+                                </a>
+                                <a href="#" class="px-8 py-3 border border-gray-600 hover:border-white transition-colors rounded-sm hover-target" onclick="showPage('contact')">
+                                    Get in Touch
+                                </a>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 relative">
+                            <div class="video-reel aspect-video bg-gray-900 rounded-md overflow-hidden">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#3a1c71;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#d76d77;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#ffaf7b;stop-opacity:1" />
+                                        </linearGradient>
+                                        <clipPath id="shape">
+                                            <rect width="100%" height="100%" />
+                                        </clipPath>
+                                        <filter id="noise">
+                                            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+                                            <feComposite operator="in" in2="SourceGraphic" result="noisy"/>
+                                        </filter>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#grad1)" />
+                                    <g clip-path="url(#shape)">
+                                        <rect width="100%" height="100%" fill="#000" opacity="0.3" filter="url(#noise)" />
+                                        <circle cx="50%" cy="50%" r="30%" fill="none" stroke="#fff" stroke-width="2" opacity="0.2" />
+                                        <circle cx="50%" cy="50%" r="20%" fill="none" stroke="#fff" stroke-width="2" opacity="0.3" />
+                                        <polygon points="960,400 1020,500 900,500" fill="#fff" opacity="0.7" />
+                                    </g>
+                                </svg>
+                                <div class="absolute bottom-4 left-4 z-10 flex items-center">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                                    <span class="text-sm">Demo Reel 2023</span>
+                                </div>
+                            </div>
+                            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-red-600 rounded-full opacity-20 blur-3xl"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Marquee Section -->
+            <section class="py-16 overflow-hidden border-t border-b border-gray-800">
+                <div class="marquee">
+                    <div class="marquee-content">
+                        <span class="text-5xl font-bold mx-4 opacity-30">STORYTELLER</span>
+                        <span class="text-5xl font-bold mx-4">EDITOR</span>
+                        <span class="text-5xl font-bold mx-4 opacity-30">COLORIST</span>
+                        <span class="text-5xl font-bold mx-4">MOTION DESIGNER</span>
+                        <span class="text-5xl font-bold mx-4 opacity-30">STORYTELLER</span>
+                        <span class="text-5xl font-bold mx-4">EDITOR</span>
+                        <span class="text-5xl font-bold mx-4 opacity-30">COLORIST</span>
+                        <span class="text-5xl font-bold mx-4">MOTION DESIGNER</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Featured Projects -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold mb-2">Featured Projects</h2>
+                    <p class="text-gray-400 mb-12">A selection of my best work</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Featured Project 1 -->
+                        <div class="project-card hover-target">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="featgrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#000428;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#004e92;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#featgrad1)" />
+                                    <g opacity="0.3">
+                                        <circle cx="30%" cy="30%" r="5%" fill="#fff" />
+                                        <rect x="60%" y="20%" width="25%" height="15%" fill="#fff" />
+                                        <rect x="60%" y="40%" width="15%" height="5%" fill="#fff" />
+                                        <rect x="20%" y="65%" width="60%" height="2%" fill="#fff" />
+                                        <rect x="20%" y="72%" width="40%" height="2%" fill="#fff" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Commercial</span>
+                                        <h3 class="text-xl font-bold">Nike "Just Do It" Campaign</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Color Grading</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="showPage('portfolio')">View Project</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Featured Project 2 -->
+                        <div class="project-card hover-target">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="featgrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#16222A;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#3A6073;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#featgrad2)" />
+                                    <g opacity="0.3">
+                                        <rect x="25%" y="20%" width="50%" height="40%" fill="#fff" />
+                                        <polygon points="50%,30% 40%,50% 60%,50%" fill="#333" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Documentary</span>
+                                        <h3 class="text-xl font-bold">Ocean's Breath</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Sound Design</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="showPage('portfolio')">View Project</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-12 text-center">
+                        <a href="#" class="inline-block px-8 py-3 border border-gray-600 hover:border-white transition-colors rounded-sm hover-target" onclick="showPage('portfolio')">
+                            View All Projects
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Services Preview -->
+            <section class="py-20 px-6 bg-black">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold mb-2">Services</h2>
+                    <p class="text-gray-400 mb-12">Professional video editing solutions</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="service-card p-6 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-12 h-12 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h18M3 16h18" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Video Editing</h3>
+                            <p class="text-gray-400">
+                                Professional editing for commercials, documentaries, and narrative films.
+                            </p>
+                        </div>
+                        
+                        <div class="service-card p-6 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-12 h-12 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Color Grading</h3>
+                            <p class="text-gray-400">
+                                Enhance the visual aesthetic of your footage with professional color correction.
+                            </p>
+                        </div>
+                        
+                        <div class="service-card p-6 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-12 h-12 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Motion Graphics</h3>
+                            <p class="text-gray-400">
+                                Dynamic motion graphics and animations to elevate your visual content.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-12 text-center">
+                        <a href="#" class="inline-block px-8 py-3 border border-gray-600 hover:border-white transition-colors rounded-sm hover-target" onclick="showPage('services')">
+                            View All Services
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonials -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold mb-2">Client Testimonials</h2>
+                    <p class="text-gray-400 mb-12">What people are saying about my work</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="p-8 border border-gray-800 rounded-md relative">
+                            <svg class="absolute -top-4 -left-4 w-8 h-8 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16.036-.33.084-.51.144-.09.028-.06.044-.06.044l.006-.01c-.22.27-.39.64-.51 1.11-.06.212-.07.487-.07.822-.23.892.25 1.72.5 2.093.24.373.77.83 1.82 1.02h.1c.11 0 .21-.07.3-.18l.29-.33c.02-.03.05-.05.08-.05.06 0 .1.04.1.1v.01c0 .04-.01.08-.04.12l-.21.33c-.05.08-.06.16-.02.24.05.1.15.17.25.17h1.06c.17 0 .3-.13.3-.3v-1.84c0-.17-.13-.3-.3-.3h-.01c-.17 0-.3.13-.3.3v.34c0 .02-.01.04-.03.05-.02.01-.04.01-.06-.01-.67-.75-.67-1.59-.67-1.81z"/>
+                            </svg>
+                            <p class="text-gray-300 mb-6">
+                                "Alex's editing skills transformed our raw footage into a compelling narrative that exceeded our expectations. His attention to detail and creative vision made all the difference."
+                            </p>
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-700 rounded-full mr-4 flex items-center justify-center">
+                                    <span class="font-bold text-lg">JD</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Jane Doe</h4>
+                                    <p class="text-gray-400">Marketing Director, Global Brands</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-8 border border-gray-800 rounded-md relative">
+                            <svg class="absolute -top-4 -left-4 w-8 h-8 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16.036-.33.084-.51.144-.09.028-.06.044-.06.044l.006-.01c-.22.27-.39.64-.51 1.11-.06.212-.07.487-.07.822-.23.892.25 1.72.5 2.093.24.373.77.83 1.82 1.02h.1c.11 0 .21-.07.3-.18l.29-.33c.02-.03.05-.05.08-.05.06 0 .1.04.1.1v.01c0 .04-.01.08-.04.12l-.21.33c-.05.08-.06.16-.02.24.05.1.15.17.25.17h1.06c.17 0 .3-.13.3-.3v-1.84c0-.17-.13-.3-.3-.3h-.01c-.17 0-.3.13-.3.3v.34c0 .02-.01.04-.03.05-.02.01-.04.01-.06-.01-.67-.75-.67-1.59-.67-1.81z"/>
+                            </svg>
+                            <p class="text-gray-300 mb-6">
+                                "Working with Alex on our documentary was a game-changer. His ability to find the emotional core of the story and bring it to life through his editing is truly remarkable."
+                            </p>
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-700 rounded-full mr-4 flex items-center justify-center">
+                                    <span class="font-bold text-lg">RS</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Robert Smith</h4>
+                                    <p class="text-gray-400">Film Director</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="py-20 px-6 bg-gradient-to-r from-gray-900 to-black">
+                <div class="container mx-auto text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to bring your vision to life?</h2>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        Let's collaborate on your next project and create something extraordinary together.
+                    </p>
+                    <a href="#" class="inline-block px-8 py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-sm hover-target text-lg" onclick="showPage('contact')">
+                        Get Started
+                    </a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PORTFOLIO PAGE -->
+        <div id="portfolio" class="page page-transition">
+            <!-- Portfolio Hero -->
+            <section class="min-h-[50vh] flex items-center justify-center px-6 pt-20 bg-gradient-to-r from-gray-900 to-black">
+                <div class="container mx-auto text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4">Portfolio</h1>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        A showcase of my best work across various genres and formats
+                    </p>
+                </div>
+            </section>
+
+            <!-- Portfolio Filter -->
+            <section class="py-10 px-6 border-b border-gray-800">
+                <div class="container mx-auto">
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <button class="px-4 py-2 border border-gray-600 rounded-sm hover:border-white transition-colors hover-target portfolio-filter active" data-filter="all">
+                            All Projects
+                        </button>
+                        <button class="px-4 py-2 border border-gray-600 rounded-sm hover:border-white transition-colors hover-target portfolio-filter" data-filter="commercial">
+                            Commercial
+                        </button>
+                        <button class="px-4 py-2 border border-gray-600 rounded-sm hover:border-white transition-colors hover-target portfolio-filter" data-filter="documentary">
+                            Documentary
+                        </button>
+                        <button class="px-4 py-2 border border-gray-600 rounded-sm hover:border-white transition-colors hover-target portfolio-filter" data-filter="music-video">
+                            Music Video
+                        </button>
+                        <button class="px-4 py-2 border border-gray-600 rounded-sm hover:border-white transition-colors hover-target portfolio-filter" data-filter="short-film">
+                            Short Film
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Portfolio Grid -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Project 1 -->
+                        <div class="project-card hover-target portfolio-item" data-category="commercial">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="projgrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#000428;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#004e92;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#projgrad1)" />
+                                    <g opacity="0.3">
+                                        <circle cx="30%" cy="30%" r="5%" fill="#fff" />
+                                        <rect x="60%" y="20%" width="25%" height="15%" fill="#fff" />
+                                        <rect x="60%" y="40%" width="15%" height="5%" fill="#fff" />
+                                        <rect x="20%" y="65%" width="60%" height="2%" fill="#fff" />
+                                        <rect x="20%" y="72%" width="40%" height="2%" fill="#fff" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Commercial</span>
+                                        <h3 class="text-xl font-bold">Nike "Just Do It" Campaign</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Color Grading</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="openProjectModal('nike')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Project 2 -->
+                        <div class="project-card hover-target portfolio-item" data-category="documentary">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="projgrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#16222A;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#3A6073;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#projgrad2)" />
+                                    <g opacity="0.3">
+                                        <rect x="25%" y="20%" width="50%" height="40%" fill="#fff" />
+                                        <polygon points="50%,30% 40%,50% 60%,50%" fill="#333" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Documentary</span>
+                                        <h3 class="text-xl font-bold">Ocean's Breath</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Sound Design</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="openProjectModal('ocean')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Project 3 -->
+                        <div class="project-card hover-target portfolio-item" data-category="music-video">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="projgrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#834d9b;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#d04ed6;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#projgrad3)" />
+                                    <g opacity="0.3">
+                                        <circle cx="50%" cy="30%" r="10%" fill="#fff" />
+                                        <rect x="35%" y="50%" width="30%" height="2%" fill="#fff" />
+                                        <rect x="40%" y="55%" width="20%" height="2%" fill="#fff" />
+                                        <rect x="45%" y="60%" width="10%" height="2%" fill="#fff" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Music Video</span>
+                                        <h3 class="text-xl font-bold">Echoes of Tomorrow</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, VFX</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="openProjectModal('echoes')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Project 4 -->
+                        <div class="project-card hover-target portfolio-item" data-category="short-film">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="projgrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#141E30;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#243B55;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#projgrad4)" />
+                                    <g opacity="0.3">
+                                        <rect x="30%" y="20%" width="40%" height="60%" fill="#fff" />
+                                        <line x1="30%" y1="20%" x2="70%" y2="80%" stroke="#333" stroke-width="2" />
+                                        <line x1="70%" y1="20%" x2="30%" y2="80%" stroke="#333" stroke-width="2" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Short Film</span>
+                                        <h3 class="text-xl font-bold">The Silent Hour</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Color Grading</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="openProjectModal('silent')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Project 5 -->
+                        <div class="project-card hover-target portfolio-item" data-category="commercial">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="projgrad5" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#0F2027;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#203A43;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#2C5364;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#projgrad5)" />
+                                    <g opacity="0.3">
+                                        <rect x="20%" y="20%" width="60%" height="60%" rx="5" fill="#fff" />
+                                        <circle cx="35%" cy="40%" r="8%" fill="#333" />
+                                        <rect x="50%" y="30%" width="20%" height="3%" fill="#333" />
+                                        <rect x="50%" y="40%" width="15%" height="3%" fill="#333" />
+                                        <rect x="50%" y="50%" width="25%" height="3%" fill="#333" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">Commercial</span>
+                                        <h3 class="text-xl font-bold">Tesla "Future Forward"</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Motion Graphics</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="openProjectModal('tesla')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Project 6 -->
+                        <div class="project-card hover-target portfolio-item" data-category="short-film">
+                            <div class="aspect-video bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="projgrad6" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#1F1C2C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#928DAB;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#projgrad6)" />
+                                    <g opacity="0.3">
+                                        <polygon points="35%,20% 65%,20% 65%,80% 35%,80%" fill="#fff" />
+                                        <line x1="35%" y1="20%" x2="50%" y2="40%" stroke="#333" stroke-width="2" />
+                                        <line x1="65%" y1="20%" x2="50%" y2="40%" stroke="#333" stroke-width="2" />
+                                        <line x1="35%" y1="80%" x2="50%" y2="40%" stroke="#333" stroke-width="2" />
+                                        <line x1="65%" y1="80%" x2="50%" y2="40%" stroke="#333" stroke-width="2" />
+                                    </g>
+                                </svg>
+                                <div class="project-overlay absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <span class="inline-block px-3 py-1 bg-red-600 text-sm mb-2">TV Series</span>
+                                        <h3 class="text-xl font-bold">Midnight Chronicles</h3>
+                                        <p class="text-gray-300 text-sm mt-2">Editing, Sound Design</p>
+                                        <button class="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors" onclick="openProjectModal('midnight')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Project Modals -->
+            <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center hidden">
+                <div class="bg-gray-900 max-w-4xl w-full mx-4 rounded-md overflow-hidden">
+                    <div class="relative">
+                        <div id="modal-content" class="p-8">
+                            <!-- Content will be dynamically inserted here -->
+                        </div>
+                        <button id="close-modal" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABOUT PAGE -->
+        <div id="about" class="page page-transition">
+            <!-- About Hero -->
+            <section class="min-h-[50vh] flex items-center justify-center px-6 pt-20 bg-gradient-to-r from-gray-900 to-black">
+                <div class="container mx-auto text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4">About Me</h1>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        Video editor and storyteller with a passion for visual narratives
+                    </p>
+                </div>
+            </section>
+
+            <!-- About Content -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <div class="flex flex-col md:flex-row items-start gap-12">
+                        <div class="md:w-1/3">
+                            <div class="aspect-[3/4] bg-gray-800 rounded-md overflow-hidden relative">
+                                <svg class="absolute inset-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1440" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="portraitgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#232526;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#414345;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#portraitgrad)" />
+                                    <g opacity="0.7">
+                                        <circle cx="50%" cy="30%" r="20%" fill="#555" />
+                                        <rect x="30%" y="50%" width="40%" height="40%" rx="5" fill="#555" />
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="md:w-2/3">
+                            <h2 class="text-3xl font-bold mb-6">Alex Morgan</h2>
+                            <p class="text-lg mb-6 text-gray-300">
+                                I'm a video editor and motion designer with a passion for visual storytelling. With over 8 years of experience in the industry, I've had the privilege of working with brands like Nike, Tesla, and HBO.
+                            </p>
+                            <p class="text-lg mb-8 text-gray-300">
+                                My approach combines technical precision with creative intuition, allowing me to craft compelling narratives that resonate with audiences. Whether it's a commercial, documentary, or narrative film, I bring the same level of dedication and attention to detail.
+                            </p>
+                            
+                            <h3 class="text-xl font-bold mb-4">My Philosophy</h3>
+                            <p class="text-lg mb-8 text-gray-300">
+                                I believe that editing is the invisible art that brings a story to life. It's about finding the perfect rhythm, the right emotional beats, and the visual flow that keeps viewers engaged. Every cut, every transition, and every effect should serve the story and enhance the viewer's experience.
+                            </p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                                <div>
+                                    <h3 class="text-xl font-bold mb-4">Skills</h3>
+                                    <ul class="space-y-2 text-gray-300">
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Adobe Premiere Pro
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Final Cut Pro
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            DaVinci Resolve
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            After Effects
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Motion Graphics
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-4">Specialties</h3>
+                                    <ul class="space-y-2 text-gray-300">
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Commercial Editing
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Documentary Storytelling
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Color Grading
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Sound Design
+                                        </li>
+                                        <li class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Visual Effects
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold mb-4">Experience</h3>
+                            <div class="ml-6 space-y-8">
+                                <div class="timeline-item pl-4">
+                                    <h4 class="font-bold">Senior Video Editor</h4>
+                                    <p class="text-red-500">Visionary Studios • 2020 - Present</p>
+                                    <p class="text-gray-400 mt-2">Lead editor for commercial and documentary projects for major brands.</p>
+                                </div>
+                                <div class="timeline-item pl-4">
+                                    <h4 class="font-bold">Video Editor</h4>
+                                    <p class="text-red-500">Cinematic Media • 2017 - 2020</p>
+                                    <p class="text-gray-400 mt-2">Edited short films, music videos, and corporate content.</p>
+                                </div>
+                                <div class="timeline-item pl-4">
+                                    <h4 class="font-bold">Junior Editor</h4>
+                                    <p class="text-red-500">Creative Pulse • 2015 - 2017</p>
+                                    <p class="text-gray-400 mt-2">Assisted senior editors and managed post-production workflows.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equipment Section -->
+            <section class="py-20 px-6 bg-black">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold mb-2">My Equipment</h2>
+                    <p class="text-gray-400 mb-12">Professional tools I use to bring your vision to life</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="equipment-item p-6 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="w-12 h-12 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Workstation</h3>
+                            <ul class="text-gray-400 space-y-2">
+                                <li>Mac Pro (2019)</li>
+                                <li>64GB RAM</li>
+                                <li>AMD Radeon Pro Vega II</li>
+                                <li>8TB SSD Storage</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="equipment-item p-6 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="w-12 h-12 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Software</h3>
+                            <ul class="text-gray-400 space-y-2">
+                                <li>Adobe Creative Cloud</li>
+                                <li>DaVinci Resolve Studio</li>
+                                <li>Final Cut Pro X</li>
+                                <li>Cinema 4D</li>
+                                <li>Pro Tools</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="equipment-item p-6 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="w-12 h-12 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Peripherals</h3>
+                            <ul class="text-gray-400 space-y-2">
+                                <li>Blackmagic Design DeckLink</li>
+                                <li>Wacom Intuos Pro</li>
+                                <li>Loupedeck CT</li>
+                                <li>Dual Pro Display XDR</li>
+                                <li>Calibrated Reference Monitor</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clients Section -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold mb-2">Clients</h2>
+                    <p class="text-gray-400 mb-12">Brands I've had the pleasure to work with</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <path fill="currentColor" d="M50,20 C60,20 70,30 70,40 L70,60 C70,70 60,80 50,80 L30,80 L30,40 C30,30 40,20 50,20 Z M50,30 C45,30 40,35 40,40 L40,70 L50,70 C55,70 60,65 60,60 L60,40 C60,35 55,30 50,30 Z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <circle fill="currentColor" cx="50" cy="50" r="30" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <rect fill="currentColor" x="20" y="20" width="60" height="60" rx="10" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <polygon fill="currentColor" points="50,20 80,50 50,80 20,50" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <path fill="currentColor" d="M20,50 L40,30 L60,30 L80,50 L60,70 L40,70 Z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <circle fill="currentColor" cx="30" cy="30" r="10" />
+                                <circle fill="currentColor" cx="70" cy="30" r="10" />
+                                <circle fill="currentColor" cx="30" cy="70" r="10" />
+                                <circle fill="currentColor" cx="70" cy="70" r="10" />
+                                <rect fill="currentColor" x="30" y="30" width="40" height="40" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <path fill="currentColor" d="M50,20 L80,40 L80,60 L50,80 L20,60 L20,40 Z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-center p-6 border border-gray-800 rounded-md">
+                            <svg class="w-24 h-24 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <path fill="currentColor" d="M30,20 L70,20 L70,40 L90,40 L90,80 L10,80 L10,40 L30,40 Z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SERVICES PAGE -->
+        <div id="services" class="page page-transition">
+            <!-- Services Hero -->
+            <section class="min-h-[50vh] flex items-center justify-center px-6 pt-20 bg-gradient-to-r from-gray-900 to-black">
+                <div class="container mx-auto text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4">Services</h1>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        Professional video editing solutions for your creative projects
+                    </p>
+                </div>
+            </section>
+
+            <!-- Services Grid -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="service-card p-8 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-16 h-16 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h18M3 16h18" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Video Editing</h3>
+                            <p class="text-gray-400 mb-6">
+                                Professional editing for commercials, documentaries, music videos, and narrative films. I focus on storytelling, pacing, and emotional impact to create engaging content.
+                            </p>
+                            <ul class="text-gray-400 space-y-2 mb-6">
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Scene assembly and structure
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Pacing and rhythm
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Dialogue editing
+                                </li>
+                            </ul>
+                            <p class="text-gray-500 text-sm italic">Starting at $1,500 per project</p>
+                        </div>
+                        
+                        <div class="service-card p-8 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-16 h-16 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Color Grading</h3>
+                            <p class="text-gray-400 mb-6">
+                                Enhance the visual aesthetic of your footage with professional color correction and grading. Create a consistent look that matches your creative vision.
+                            </p>
+                            <ul class="text-gray-400 space-y-2 mb-6">
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Primary color correction
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Secondary color grading
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Look development
+                                </li>
+                            </ul>
+                            <p class="text-gray-500 text-sm italic">Starting at $800 per project</p>
+                        </div>
+                        
+                        <div class="service-card p-8 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-16 h-16 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Motion Graphics</h3>
+                            <p class="text-gray-400 mb-6">
+                                Dynamic motion graphics and animations to elevate your visual content. From simple lower thirds to complex animated sequences.
+                            </p>
+                            <ul class="text-gray-400 space-y-2 mb-6">
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Title sequences
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Lower thirds and graphics
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Animated logos
+                                </li>
+                            </ul>
+                            <p class="text-gray-500 text-sm italic">Starting at $1,000 per project</p>
+                        </div>
+                        
+                        <div class="service-card p-8 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-16 h-16 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Sound Design</h3>
+                            <p class="text-gray-400 mb-6">
+                                Professional audio editing, mixing, and sound design to complement your visuals and enhance the overall viewing experience.
+                            </p>
+                            <ul class="text-gray-400 space-y-2 mb-6">
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Audio cleanup and restoration
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Sound effects creation
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Audio mixing
+                                </li>
+                            </ul>
+                            <p class="text-gray-500 text-sm italic">Starting at $600 per project</p>
+                        </div>
+                        
+                        <div class="service-card p-8 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-16 h-16 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Visual Effects</h3>
+                            <p class="text-gray-400 mb-6">
+                                Seamless visual effects integration to enhance your storytelling capabilities. From simple clean-up to complex compositing.
+                            </p>
+                            <ul class="text-gray-400 space-y-2 mb-6">
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Compositing
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Screen replacements
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Object removal
+                                </li>
+                            </ul>
+                            <p class="text-gray-500 text-sm italic">Starting at $1,200 per project</p>
+                        </div>
+                        
+                        <div class="service-card p-8 border border-gray-800 rounded-md hover:border-red-600 transition-colors hover-target">
+                            <div class="service-icon w-16 h-16 flex items-center justify-center bg-red-600 bg-opacity-20 rounded-md mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Post-Production</h3>
+                            <p class="text-gray-400 mb-6">
+                                End-to-end post-production management for projects of any scale. From organizing footage to delivering final files.
+                            </p>
+                            <ul class="text-gray-400 space-y-2 mb-6">
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Media management
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Workflow optimization
+                                </li>
+                                <li class="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Final delivery
+                                </li>
+                            </ul>
+                            <p class="text-gray-500 text-sm italic">Starting at $2,500 per project</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Process Section -->
+            <section class="py-20 px-6 bg-black">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold mb-2">My Process</h2>
+                    <p class="text-gray-400 mb-12">How I approach each project to ensure the best results</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                        <div class="p-6 border border-gray-800 rounded-md relative">
+                            <div class="absolute -top-4 -left-4 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center font-bold">1</div>
+                            <h3 class="text-xl font-bold mb-4 mt-2">Consultation</h3>
+                            <p class="text-gray-400">
+                                We discuss your project goals, target audience, and creative vision to ensure we're aligned from the start.
+                            </p>
+                        </div>
+                        
+                        <div class="p-6 border border-gray-800 rounded-md relative">
+                            <div class="absolute -top-4 -left-4 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center font-bold">2</div>
+                            <h3 class="text-xl font-bold mb-4 mt-2">Planning</h3>
+                            <p class="text-gray-400">
+                                I develop a detailed plan including timeline, approach, and technical requirements for your project.
+                            </p>
+                        </div>
+                        
+                        <div class="p-6 border border-gray-800 rounded-md relative">
+                            <div class="absolute -top-4 -left-4 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center font-bold">3</div>
+                            <h3 class="text-xl font-bold mb-4 mt-2">Execution</h3>
+                            <p class="text-gray-400">
+                                I work on your project, keeping you updated throughout the process and incorporating your feedback.
+                            </p>
+                        </div>
+                        
+                        <div class="p-6 border border-gray-800 rounded-md relative">
+                            <div class="absolute -top-4 -left-4 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center font-bold">4</div>
+                            <h3 class="text-xl font-bold mb-4 mt-2">Delivery</h3>
+                            <p class="text-gray-400">
+                                Final files are delivered in your preferred format, with follow-up support to ensure your satisfaction.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to start your project?</h2>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        Contact me today to discuss how I can help bring your vision to life.
+                    </p>
+                    <a href="#" class="inline-block px-8 py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-sm hover-target text-lg" onclick="showPage('contact')">
+                        Get in Touch
+                    </a>
+                </div>
+            </section>
+        </div>
+
+        <!-- BLOG PAGE -->
+        <div id="blog" class="page page-transition">
+            <!-- Blog Hero -->
+            <section class="min-h-[50vh] flex items-center justify-center px-6 pt-20 bg-gradient-to-r from-gray-900 to-black">
+                <div class="container mx-auto text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4">Blog</h1>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        Insights, tips, and stories from my journey as a video editor
+                    </p>
+                </div>
+            </section>
+
+            <!-- Blog Posts -->
+            <section class="py-20 px-6">
+                <div class="container mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Blog Post 1 -->
+                        <div class="blog-card border border-gray-800 rounded-md overflow-hidden hover-target">
+                            <div class="blog-image aspect-video overflow-hidden">
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="bloggrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#4568DC;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#B06AB3;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#bloggrad1)" />
+                                    <g opacity="0.3">
+                                        <rect x="20%" y="20%" width="60%" height="60%" fill="#fff" />
+                                        <line x1="20%" y1="30%" x2="80%" y2="30%" stroke="#333" stroke-width="2" />
+                                        <line x1="20%" y1="40%" x2="80%" y2="40%" stroke="#333" stroke-width="2" />
+                                        <line x1="20%" y1="50%" x2="60%" y2="50%" stroke="#333" stroke-width="2" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-xs text-gray-400">June 15, 2023</span>
+                                    <span class="mx-2 text-gray-600">•</span>
+                                    <span class="text-xs text-red-500">Editing Tips</span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">The Art of Invisible Editing: How to Make Cuts That No One Notices</h3>
+                                <p class="text-gray-400 mb-4">
+                                    Learn the techniques that make your edits seamless and enhance the storytelling without drawing attention to themselves.
+                                </p>
+                                <a href="#" class="text-red-500 hover:text-red-400 transition-colors inline-flex items-center">
+                                    Read More
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Blog Post 2 -->
+                        <div class="blog-card border border-gray-800 rounded-md overflow-hidden hover-target">
+                            <div class="blog-image aspect-video overflow-hidden">
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="bloggrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#8E2DE2;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#4A00E0;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#bloggrad2)" />
+                                    <g opacity="0.3">
+                                        <circle cx="50%" cy="40%" r="20%" fill="#fff" />
+                                        <rect x="30%" y="65%" width="40%" height="5%" fill="#fff" />
+                                        <rect x="35%" y="75%" width="30%" height="5%" fill="#fff" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-xs text-gray-400">May 22, 2023</span>
+                                    <span class="mx-2 text-gray-600">•</span>
+                                    <span class="text-xs text-red-500">Color Grading</span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">Color Psychology in Film: How to Use Color to Enhance Your Story</h3>
+                                <p class="text-gray-400 mb-4">
+                                    Discover how different color palettes can influence audience emotions and reinforce your narrative themes.
+                                </p>
+                                <a href="#" class="text-red-500 hover:text-red-400 transition-colors inline-flex items-center">
+                                    Read More
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Blog Post 3 -->
+                        <div class="blog-card border border-gray-800 rounded-md overflow-hidden hover-target">
+                            <div class="blog-image aspect-video overflow-hidden">
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="bloggrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#F953C6;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#B91D73;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#bloggrad3)" />
+                                    <g opacity="0.3">
+                                        <rect x="25%" y="25%" width="50%" height="50%" fill="#fff" />
+                                        <circle cx="50%" cy="50%" r="15%" fill="#333" />
+                                        <polygon points="50%,35% 45%,45% 55%,45%" fill="#fff" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-xs text-gray-400">April 10, 2023</span>
+                                    <span class="mx-2 text-gray-600">•</span>
+                                    <span class="text-xs text-red-500">Industry Insights</span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">The Future of Video Editing: AI Tools and Human Creativity</h3>
+                                <p class="text-gray-400 mb-4">
+                                    Exploring how artificial intelligence is changing the editing landscape and how editors can adapt and thrive.
+                                </p>
+                                <a href="#" class="text-red-500 hover:text-red-400 transition-colors inline-flex items-center">
+                                    Read More
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Blog Post 4 -->
+                        <div class="blog-card border border-gray-800 rounded-md overflow-hidden hover-target">
+                            <div class="blog-image aspect-video overflow-hidden">
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="bloggrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#1A2980;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#26D0CE;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#bloggrad4)" />
+                                    <g opacity="0.3">
+                                        <rect x="20%" y="20%" width="60%" height="60%" rx="10" fill="#fff" />
+                                        <rect x="30%" y="30%" width="40%" height="5%" fill="#333" />
+                                        <rect x="30%" y="40%" width="40%" height="5%" fill="#333" />
+                                        <rect x="30%" y="50%" width="40%" height="5%" fill="#333" />
+                                        <rect x="30%" y="60%" width="20%" height="5%" fill="#333" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-xs text-gray-400">March 5, 2023</span>
+                                    <span class="mx-2 text-gray-600">•</span>
+                                    <span class="text-xs text-red-500">Sound Design</span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">The Power of Sound: How Audio Enhances Visual Storytelling</h3>
+                                <p class="text-gray-400 mb-4">
+                                    Understanding the crucial role of sound design in creating immersive and emotionally resonant video content.
+                                </p>
+                                <a href="#" class="text-red-500 hover:text-red-400 transition-colors inline-flex items-center">
+                                    Read More
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Blog Post 5 -->
+                        <div class="blog-card border border-gray-800 rounded-md overflow-hidden hover-target">
+                            <div class="blog-image aspect-video overflow-hidden">
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="bloggrad5" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#FF416C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#FF4B2B;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#bloggrad5)" />
+                                    <g opacity="0.3">
+                                        <rect x="30%" y="20%" width="40%" height="60%" fill="#fff" />
+                                        <circle cx="50%" cy="40%" r="10%" fill="#333" />
+                                        <rect x="35%" y="55%" width="30%" height="3%" fill="#333" />
+                                        <rect x="35%" y="62%" width="30%" height="3%" fill="#333" />
+                                        <rect x="35%" y="69%" width="30%" height="3%" fill="#333" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-xs text-gray-400">February 18, 2023</span>
+                                    <span class="mx-2 text-gray-600">•</span>
+                                    <span class="text-xs text-red-500">Workflow Tips</span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">Optimizing Your Editing Workflow: Time-Saving Techniques for Busy Editors</h3>
+                                <p class="text-gray-400 mb-4">
+                                    Practical tips and shortcuts to streamline your editing process and increase productivity without sacrificing quality.
+                                </p>
+                                <a href="#" class="text-red-500 hover:text-red-400 transition-colors inline-flex items-center">
+                                    Read More
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Blog Post 6 -->
+                        <div class="blog-card border border-gray-800 rounded-md overflow-hidden hover-target">
+                            <div class="blog-image aspect-video overflow-hidden">
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+                                    <defs>
+                                        <linearGradient id="bloggrad6" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#0F0C29;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#302B63;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#24243E;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#bloggrad6)" />
+                                    <g opacity="0.3">
+                                        <polygon points="30%,30% 70%,30% 70%,70% 30%,70%" fill="#fff" />
+                                        <line x1="30%" y1="40%" x2="70%" y2="40%" stroke="#333" stroke-width="2" />
+                                        <line x1="30%" y1="50%" x2="70%" y2="50%" stroke="#333" stroke-width="2" />
+                                        <line x1="30%" y1="60%" x2="50%" y2="60%" stroke="#333" stroke-width="2" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-xs text-gray-400">January 25, 2023</span>
+                                    <span class="mx-2 text-gray-600">•</span>
+                                    <span class="text-xs text-red-500">Client Relations</span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">The Art of Client Communication: How to Translate Creative Feedback</h3>
+                                <p class="text-gray-400 mb-4">
+                                    Strategies for effectively interpreting client feedback and maintaining your creative vision while meeting their needs.
+                                </p>
+                                <a href="#" class="text-red-500 hover:text-red-400 transition-colors inline-flex items-center">
+                                    Read More
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-12 flex justify-center">
+                        <div class="flex space-x-2">
+                            <a href="#" class="w-10 h-10 flex items-center justify-center border border-gray-600 rounded-md hover:border-white transition-colors hover-target">
+                                <svg xmlns="http://www.w3.org<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'964b8dee3294dafb',t:'MTc1MzQ0NTQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
